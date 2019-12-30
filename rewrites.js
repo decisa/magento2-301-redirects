@@ -1,5 +1,6 @@
 const requestPath = "inspiration/";
 const targetPath = "/";
+const domain = "https://www.roomservice360.com/";
 
 const notificationsArea = document.getElementById('system_messages').parentNode;
 const messagesElement = document.createElement('div');
@@ -32,7 +33,28 @@ function iframeLoaded(e){
 
   const success = doc.querySelector('.message-success');
   if (success) {
-    postMessage(success.firstElementChild.innerText);
+    let result = 0;
+    const urlToCheck = domain + requestPath;
+    
+    const message = `
+      <div class="row">
+        <div class="col-5">
+          <span>request</span><br>${requestPath}
+        </div>
+        <div class="col-5">
+          <span>target</span><br>${targetPath}
+        </div>
+        <div class="col-2">
+          <a href=${urlToCheck} target="_blank">link to check</a> code: <span id="test"></span>
+        </div>
+      </div>
+    `;
+    postMessage(message);
+    fetch(urlToCheck)
+    .then(response => {
+      result = response.status;
+      document.getElementById('test').innerHTML = result;
+    })
     return;
   }
 
