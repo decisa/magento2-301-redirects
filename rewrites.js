@@ -7,8 +7,6 @@ messagesElement.setAttribute('id', 'rewrite_messages');
 notificationsArea.append(messagesElement);
 const notifications = document.getElementById('rewrite_messages');
 
-
-
 const button = document.getElementById('add');
 // find the link to add new URL rewrite page
 const link = button.attributes.onclick.nodeValue.slice(13, -2);
@@ -22,10 +20,24 @@ ifrm.onload = iframeLoaded;
 ifrm.setAttribute('src', link);
 marker.parentNode.insertBefore(ifrm, marker);
 
-
-
-function iframeLoaded(){
+function iframeLoaded(e){
   postMessage('iframe loaded');
+  const doc = e.srcElement.contentDocument;
+  
+  const error = doc.querySelector('.message-error');
+  if (error) {
+    postMessage(error.firstElementChild.innerText);
+    return;
+  }
+
+  const success = doc.querySelector('.message-success');
+  if (success) {
+    postMessage(success.firstElementChild.innerText);
+    return;
+  }
+
+  let form = doc.getElementById('edit_form');
+  submitRedirect(requestPath, targetPath, form);
 }
 
 function postMessage(text, container = notifications){
@@ -41,24 +53,15 @@ function submitRedirect(request, target, form){
     const index = options.indexOf("301");
     if (index != -1) {
       form.redirect_type.selectedIndex = index;
-      console.log('all good! found all required fields');
-      console.log(`request: "${form.request_path.value}", target: "${form.target_path.value}", type: ${form.redirect_type.value}`)
+      postMessage('all good! found all required fields');
+      postMessage(`request: "${form.request_path.value}", target: "${form.target_path.value}", type: ${form.redirect_type.value}`)
     }
     else {
-      console.error('301 redirect option was not found');
+      postMessage('301 redirect option was not found');
     }
-    // form.submit();
+    form.submit();
   }
   else {
     console.error('this is not a 301 redirect form. missing required inputs');
   }
 }
-
-fetch(link)
-.then(response => response.text())
-.then(data => {
-  let parser = new DOMParser();
-  let page = parser.parseFromString(data, 'text/html');
-  let form = page.getElementById('edit_form');
-  submitRedirect(requestPath, targetPath, form);  
-})
