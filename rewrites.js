@@ -1,3 +1,7 @@
+const requestPath = "inspiration/";
+const targetPath = "/";
+
+
 const button = document.getElementById('add');
 // find the link to add new URL rewrite page
 const link = button.attributes.onclick.nodeValue.slice(13, -2);
@@ -10,8 +14,8 @@ fetch(link)
   let form = page.getElementById('edit_form');
   
   if (form.request_path && form.target_path && form.redirect_type) {
-    form.request_path.value = '1';
-    form.target_path.value = '2';
+    form.request_path.value = requestPath;
+    form.target_path.value = targetPath;
     const options = Array.from(form.redirect_type.options).map(x => x.value);
     const index = options.indexOf("301");
     if (index != -1) {
