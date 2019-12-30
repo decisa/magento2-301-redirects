@@ -1,6 +1,14 @@
 const requestPath = "inspiration/";
 const targetPath = "/";
 
+const notificationsArea = document.getElementById('system_messages').parentNode;
+const messagesElement = document.createElement('div');
+messagesElement.setAttribute('id', 'rewrite_messages');
+notificationsArea.append(messagesElement);
+const notifications = document.getElementById('rewrite_messages');
+
+
+
 const button = document.getElementById('add');
 // find the link to add new URL rewrite page
 const link = button.attributes.onclick.nodeValue.slice(13, -2);
@@ -15,8 +23,13 @@ ifrm.setAttribute('src', link);
 marker.parentNode.insertBefore(ifrm, marker);
 
 
+
 function iframeLoaded(){
-  console.log('iframe loaded');
+  postMessage('iframe loaded');
+}
+
+function postMessage(text, container = notifications){
+  container.innerHTML += `<p>${text}</p>`;
 }
 
 function submitRedirect(request, target, form){
