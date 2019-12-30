@@ -5,6 +5,7 @@ const domain = "https://www.roomservice360.com/";
 const notificationsArea = document.getElementById('system_messages').parentNode;
 const messagesElement = document.createElement('div');
 messagesElement.setAttribute('id', 'rewrite_messages');
+notificationsArea.innerHTML += styles();
 notificationsArea.append(messagesElement);
 const notifications = document.getElementById('rewrite_messages');
 
@@ -37,14 +38,14 @@ function iframeLoaded(e){
     const urlToCheck = domain + requestPath;
     
     const message = `
-      <div class="row">
-        <div class="col-5">
+      <div class="rewrite">
+        <div class="path">
           <span>request</span><br>${requestPath}
         </div>
-        <div class="col-5">
+        <div class="path">
           <span>target</span><br>${targetPath}
         </div>
-        <div class="col-2">
+        <div class="link">
           <a href=${urlToCheck} target="_blank">link to check</a> code: <span id="test"></span>
         </div>
       </div>
@@ -86,4 +87,29 @@ function submitRedirect(request, target, form){
   else {
     console.error('this is not a 301 redirect form. missing required inputs');
   }
+}
+
+function styles(){
+  return `
+  <style xml="space"><!--
+    .rewrite {
+      display: flex;
+      flex-direction: row;
+      border-top: 1px solid #333;
+      padding: 5px 0;
+      align-items: center;
+    }
+    .path {
+      padding: 0 15px;
+      width: 30%;
+    }
+    .path span {
+      font-weight: 700;
+      font-size: 10px;
+    }
+    .link {
+      padding: 0 15px;
+      width: 20%;
+    }
+  --></style>`;
 }
