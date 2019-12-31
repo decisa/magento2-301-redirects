@@ -61,50 +61,42 @@ function iframeLoaded(e){
   
   const error = doc.querySelector('.message-error');
   if (error) {
-    let result = 0;
     const urlToCheck = domain + requestPath;
     const message = rewriteReport(requestPath, targetPath, id, '#ffb471', error.firstElementChild.innerText);
     postMessage(message);
 
     fetch(urlToCheck)
-    .then(response => {
-      result = response.status;
-      document.getElementById(`code${id}`).innerHTML = `<b>${result}</b>`;
-      let container = document.getElementById(`link${id}`);
-      if (result === 200) {
-        container.setAttribute('style', `background-color: #b5f8c9`);
-      } else {
-        container.setAttribute('style', `background-color: #ff7084; color: #fff`);
-      }
-    })
+    .then(response => setStatusCode(response.status, id));
+    
     startNextRedirect(rewrites, id);
     return;
   }
 
   const success = doc.querySelector('.message-success');
   if (success) {
-    let result = 0;
     const urlToCheck = domain + requestPath;
     const message = rewriteReport(requestPath, targetPath, id);
     postMessage(message);
 
     fetch(urlToCheck)
-    .then(response => {
-      result = response.status;
-      document.getElementById(`code${id}`).innerHTML = `<b>${result}</b>`;
-      let container = document.getElementById(`link${id}`);
-      if (result === 200) {
-        container.setAttribute('style', `background-color: #b5f8c9`);
-      } else {
-        container.setAttribute('style', `background-color: #ff7084; color: #fff`);
-      }
-    })
+    .then(response => setStatusCode(response.status, id));
+
     startNextRedirect(rewrites, id);
     return;
   }
 
   let form = doc.getElementById('edit_form');
   submitRedirect(requestPath, targetPath, form);
+}
+
+function setStatusCode(status, id) {
+  document.getElementById(`code${id}`).innerHTML = `<b>${status}</b>`;
+  let container = document.getElementById(`link${id}`);
+  if (status === 200) {
+    container.setAttribute('style', `background-color: #b5f8c9`);
+  } else {
+    container.setAttribute('style', `background-color: #ff7084; color: #fff`);
+  }
 }
 
 function rewriteReport(requestPath, targetPath, id, background = null, errorMessage = null) {
