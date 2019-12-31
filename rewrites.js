@@ -1,5 +1,5 @@
-const requestPath = "inspiration/";
-const targetPath = "/";
+const requestPath = "blog/2009/11/how-to-decorate-modern-interiors-using-grey-colors/";
+const targetPath = "inspiration/how-to-decorate-modern-interiors-using-grey-colors/";
 const domain = "https://www.roomservice360.com/";
 
 const notificationsArea = document.getElementById('system_messages').parentNode;
@@ -28,7 +28,16 @@ function iframeLoaded(e){
   
   const error = doc.querySelector('.message-error');
   if (error) {
-    postMessage(error.firstElementChild.innerText);
+    let result = 0;
+    const urlToCheck = domain + requestPath;
+    const message = rewriteReport(requestPath, targetPath, error.firstElementChild.innerText);
+    postMessage(message);
+
+    fetch(urlToCheck)
+    .then(response => {
+      result = response.status;
+      document.getElementById('test').innerHTML = result;
+    })
     return;
   }
 
@@ -36,9 +45,9 @@ function iframeLoaded(e){
   if (success) {
     let result = 0;
     const urlToCheck = domain + requestPath;
-    
     const message = rewriteReport(requestPath, targetPath);
     postMessage(message);
+
     fetch(urlToCheck)
     .then(response => {
       result = response.status;
@@ -51,7 +60,7 @@ function iframeLoaded(e){
   submitRedirect(requestPath, targetPath, form);
 }
 
-function rewriteReport(requestPath, targetPath) {
+function rewriteReport(requestPath, targetPath, errorMessage = null) {
   const message = `
       <div class="rewrite">
         <div class="path">
@@ -61,7 +70,7 @@ function rewriteReport(requestPath, targetPath) {
           <span>target</span><br>${targetPath}
         </div>
         <div class="link >
-          <a href=${domain + requestPath} target="_blank">link</a> code: <span id="test"></span>
+          <a href=${domain + requestPath} target="_blank">link</a> code: <span id="test"></span> ${errorMessage}
         </div>
       </div>`;
   return message; 
