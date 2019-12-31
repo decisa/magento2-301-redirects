@@ -63,13 +63,19 @@ function iframeLoaded(e){
   if (error) {
     let result = 0;
     const urlToCheck = domain + requestPath;
-    const message = rewriteReport(requestPath, targetPath, id, error.firstElementChild.innerText);
+    const message = rewriteReport(requestPath, targetPath, id, '#ffb471', error.firstElementChild.innerText);
     postMessage(message);
 
     fetch(urlToCheck)
     .then(response => {
       result = response.status;
-      document.getElementById(`code${id}`).innerHTML = result;
+      document.getElementById(`code${id}`).innerHTML = `<b>${result}</b>`;
+      let container = document.getElementById(`link${id}`);
+      if (result === 200) {
+        container.setAttribute('style', `background-color: #b5f8c9`);
+      } else {
+        container.setAttribute('style', `background-color: #ff7084; color: #fff`);
+      }
     })
     startNextRedirect(rewrites, id);
     return;
@@ -85,7 +91,13 @@ function iframeLoaded(e){
     fetch(urlToCheck)
     .then(response => {
       result = response.status;
-      document.getElementById(`code${id}`).innerHTML = result;
+      document.getElementById(`code${id}`).innerHTML = `<b>${result}</b>`;
+      let container = document.getElementById(`link${id}`);
+      if (result === 200) {
+        container.setAttribute('style', `background-color: #b5f8c9`);
+      } else {
+        container.setAttribute('style', `background-color: #ff7084; color: #fff`);
+      }
     })
     startNextRedirect(rewrites, id);
     return;
@@ -95,9 +107,10 @@ function iframeLoaded(e){
   submitRedirect(requestPath, targetPath, form);
 }
 
-function rewriteReport(requestPath, targetPath, id, errorMessage = null) {
+function rewriteReport(requestPath, targetPath, id, background = null, errorMessage = null) {
   const message = `
-      <div class="rewrite">
+      <div class="rewrite"${background ? ` style="background-color:${background}"` : ''}>
+        <div class="counter">${parseInt(id) + 1}</div>
         <div class="path">
           <span>request</span><br>${requestPath}
         </div>
@@ -149,20 +162,24 @@ function styles(){
       display: flex;
       flex-direction: row;
       border-top: 1px solid #333;
-      padding: 5px 0;
+      padding: 0 5px;
       align-items: center;
+    }
+    .counter{
+      width: 5%;
+      text-align: center;
     }
     .path {
       padding: 0 15px;
-      width: 30%;
+      width: 35%;
     }
     .path span {
       font-weight: 700;
       font-size: 10px;
     }
     .link {
-      padding: 0 15px;
-      width: 20%;
+      padding: 10px;
+      width: 25%;
     }
   --></style>`;
 }
