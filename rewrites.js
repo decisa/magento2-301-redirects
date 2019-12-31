@@ -1,5 +1,8 @@
-const requestPath = "blog/2009/11/how-to-decorate-modern-interiors-using-grey-colors/";
-const targetPath = "inspiration/how-to-decorate-modern-interiors-using-grey-colors/";
+const rewrites = [
+  ["blog/2018/11/7-tips-for-buying-a-comfortable-sleeper-sofa-that-youll-want-to-spend-the-night-on/", "inspiration/7-tips-for-buying-a-comfortable-sleeper-sofa-that-youll-want-to-spend-the-night-on/"],
+  ["blog/2018/10/office-furniture-buying-guide-6-tips-from-a-manager/", "inspiration/office-furniture-buying-guide-6-tips-from-a-manager/"]
+];
+
 const domain = "https://www.roomservice360.com/";
 
 const notificationsArea = document.getElementById('system_messages').parentNode;
@@ -19,25 +22,56 @@ let ifrm = document.createElement('iframe');
 ifrm.setAttribute('id', 'newRedirect');
 ifrm.setAttribute('style', 'display: none');
 ifrm.onload = iframeLoaded;
-ifrm.setAttribute('src', link);
 marker.parentNode.insertBefore(ifrm, marker);
 
+// start processing redirects:
+start(0);
+
+function start(id = 0) {
+  addRedirect(rewrites, 0);
+}
+
+function addRedirect(rewrites, id) {
+  ifrm.setAttribute('request-path', rewrites[id][0]);
+  ifrm.setAttribute('target-path', rewrites[id][1]);
+  ifrm.setAttribute('rewrite-id', id);
+  ifrm.setAttribute('src', link);
+  console.log(`started running redirect id=${id}`);
+}
+
+function startNextRedirect(rewrites, currentId){
+  let nextID = parseInt(currentId) + 1;
+  if (nextID < rewrites.length) {
+    addRedirect(rewrites, nextID)
+  }
+  else {
+    console.log('finished');
+  }
+}
+
 function iframeLoaded(e){
-  postMessage('iframe loaded');
+  if (!e.srcElement.attributes['request-path']) {
+    // this is initial load of iframe, before request and target are set. skip this load
+    return;
+  }
   const doc = e.srcElement.contentDocument;
+  const requestPath = e.srcElement.attributes['request-path'].value;
+  const targetPath = e.srcElement.attributes['target-path'].value;
+  const id = e.srcElement.attributes['rewrite-id'].value;
   
   const error = doc.querySelector('.message-error');
   if (error) {
     let result = 0;
     const urlToCheck = domain + requestPath;
-    const message = rewriteReport(requestPath, targetPath, error.firstElementChild.innerText);
+    const message = rewriteReport(requestPath, targetPath, id, error.firstElementChild.innerText);
     postMessage(message);
 
     fetch(urlToCheck)
     .then(response => {
       result = response.status;
-      document.getElementById('test').innerHTML = result;
+      document.getElementById(`code${id}`).innerHTML = result;
     })
+    startNextRedirect(rewrites, id);
     return;
   }
 
@@ -45,14 +79,15 @@ function iframeLoaded(e){
   if (success) {
     let result = 0;
     const urlToCheck = domain + requestPath;
-    const message = rewriteReport(requestPath, targetPath);
+    const message = rewriteReport(requestPath, targetPath, id);
     postMessage(message);
 
     fetch(urlToCheck)
     .then(response => {
       result = response.status;
-      document.getElementById('test').innerHTML = result;
+      document.getElementById(`code${id}`).innerHTML = result;
     })
+    startNextRedirect(rewrites, id);
     return;
   }
 
@@ -60,7 +95,7 @@ function iframeLoaded(e){
   submitRedirect(requestPath, targetPath, form);
 }
 
-function rewriteReport(requestPath, targetPath, errorMessage = null) {
+function rewriteReport(requestPath, targetPath, id, errorMessage = null) {
   const message = `
       <div class="rewrite">
         <div class="path">
@@ -69,8 +104,8 @@ function rewriteReport(requestPath, targetPath, errorMessage = null) {
         <div class="path">
           <span>target</span><br>${targetPath}
         </div>
-        <div class="link >
-          <a href=${domain + requestPath} target="_blank">link</a> code: <span id="test"></span> ${errorMessage}
+        <div class="link" id="link${id}">
+          <a href=${domain + requestPath} target="_blank">link</a> code: <span id="code${id}"></span> ${errorMessage}
         </div>
       </div>`;
   return message; 
@@ -94,8 +129,8 @@ function submitRedirect(request, target, form){
     const index = options.indexOf("301");
     if (index != -1) {
       form.redirect_type.selectedIndex = index;
-      postMessage('all good! found all required fields', 'p', 'color: cyan');
-      postMessage(`request: "${form.request_path.value}", target: "${form.target_path.value}", type: ${form.redirect_type.value}`, 'p', 'color: cyan');
+      // postMessage('all good! found all required fields', 'p', 'color: cyan');
+      // postMessage(`request: "${form.request_path.value}", target: "${form.target_path.value}", type: ${form.redirect_type.value}`, 'p', 'color: cyan');
     }
     else {
       postMessage('301 redirect option was not found', 'p', 'color: red');
