@@ -58,11 +58,20 @@ function iframeLoaded(e){
   const requestPath = e.srcElement.attributes['request-path'].value;
   const targetPath = e.srcElement.attributes['target-path'].value;
   const id = e.srcElement.attributes['rewrite-id'].value;
-  
+
+  // when "Add URL rewrites" form is submitted, it returns back to "All URL Rewries" page
+  // After form is submitted "All URL Rewrites" page will have a notification with the result of submission 
+  // below we are looking if one of those messages is present:
   const error = doc.querySelector('.message-error');
-  if (error) {
-    const urlToCheck = domain + requestPath;
-    const message = rewriteReport(requestPath, targetPath, id, '#ffb471', error.firstElementChild.innerText);
+  const success = doc.querySelector('.message-success');
+
+  if (error || success) {
+    const urlToCheck = domain + requestPath +'x';
+    const args = [requestPath, targetPath, id];
+    if (error) {
+      args.push('#ffb471', error.firstElementChild.innerText);
+    }
+    const message = rewriteReport(...args);
     postMessage(message);
 
     fetch(urlToCheck)
@@ -72,19 +81,7 @@ function iframeLoaded(e){
     return;
   }
 
-  const success = doc.querySelector('.message-success');
-  if (success) {
-    const urlToCheck = domain + requestPath;
-    const message = rewriteReport(requestPath, targetPath, id);
-    postMessage(message);
-
-    fetch(urlToCheck)
-    .then(response => setStatusCode(response.status, id));
-
-    startNextRedirect(rewrites, id);
-    return;
-  }
-
+  // if there are no messages, then we are most likely on "Add URL rewrites" page
   let form = doc.getElementById('edit_form');
   submitRedirect(requestPath, targetPath, form);
 }
@@ -101,18 +98,18 @@ function setStatusCode(status, id) {
 
 function rewriteReport(requestPath, targetPath, id, background = null, errorMessage = null) {
   const message = `
-      <div class="rewrite"${background ? ` style="background-color:${background}"` : ''}>
-        <div class="counter">${parseInt(id) + 1}</div>
-        <div class="path">
-          <span>request</span><br>${requestPath}
-        </div>
-        <div class="path">
-          <span>target</span><br>${targetPath}
-        </div>
-        <div class="link" id="link${id}">
-          <a href=${domain + requestPath} target="_blank">link</a> code: <span id="code${id}"></span> ${errorMessage}
-        </div>
-      </div>`;
+    <div class="rewrite"${background ? ` style="background-color:${background}"` : ''}>
+      <div class="counter">${parseInt(id) + 1}</div>
+      <div class="path">
+        <span>request</span><br>${requestPath}
+      </div>
+      <div class="path">
+        <span>target</span><br>${targetPath}
+      </div>
+      <div class="link" id="link${id}">
+        <a href=${domain + requestPath} target="_blank">link</a> code: <span id="code${id}"></span> ${errorMessage}
+      </div>
+    </div>`;
   return message; 
 }
 
