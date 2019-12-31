@@ -1,6 +1,7 @@
 const rewrites = [
   ["blog/2018/11/7-tips-for-buying-a-comfortable-sleeper-sofa-that-youll-want-to-spend-the-night-on/", "inspiration/7-tips-for-buying-a-comfortable-sleeper-sofa-that-youll-want-to-spend-the-night-on/"],
-  ["blog/2018/10/office-furniture-buying-guide-6-tips-from-a-manager/", "inspiration/office-furniture-buying-guide-6-tips-from-a-manager/"]
+  ["blog/2018/10/office-furniture-buying-guide-6-tips-from-a-manager/", "inspiration/office-furniture-buying-guide-6-tips-from-a-manager/"],
+  ["inspiration/", "/"]
 ];
 
 const domain = "https://www.roomservice360.com/";
@@ -29,6 +30,7 @@ start(0);
 
 function start(id = 0) {
   addRedirect(rewrites, 0);
+  postMessage(`Started adding URL Rewrites. Rewrites in queue: ${rewrites.length - id}`, 'div','background-color: #dbe1dd; padding: 5px');
 }
 
 function addRedirect(rewrites, id) {
@@ -45,7 +47,7 @@ function startNextRedirect(rewrites, currentId){
     addRedirect(rewrites, nextID)
   }
   else {
-    console.log('finished');
+    postMessage(`Success. Finished processing all URL rewrites`, 'div','background-color: #dbe1dd; padding: 5px');
   }
 }
 
@@ -66,7 +68,7 @@ function iframeLoaded(e){
   const success = doc.querySelector('.message-success');
 
   if (error || success) {
-    const urlToCheck = domain + requestPath +'x';
+    const urlToCheck = domain + requestPath;
     const args = [requestPath, targetPath, id];
     if (error) {
       args.push('#ffb471', error.firstElementChild.innerText);
@@ -107,7 +109,7 @@ function rewriteReport(requestPath, targetPath, id, background = null, errorMess
         <span>target</span><br>${targetPath}
       </div>
       <div class="link" id="link${id}">
-        <a href=${domain + requestPath} target="_blank">link</a> code: <span id="code${id}"></span> ${errorMessage}
+        <a href=${domain + requestPath} target="_blank">link</a> code: <span id="code${id}"></span> ${errorMessage ? errorMessage : ''}
       </div>
     </div>`;
   return message; 
@@ -131,8 +133,6 @@ function submitRedirect(request, target, form){
     const index = options.indexOf("301");
     if (index != -1) {
       form.redirect_type.selectedIndex = index;
-      // postMessage('all good! found all required fields', 'p', 'color: cyan');
-      // postMessage(`request: "${form.request_path.value}", target: "${form.target_path.value}", type: ${form.redirect_type.value}`, 'p', 'color: cyan');
     }
     else {
       postMessage('301 redirect option was not found', 'p', 'color: red');
@@ -167,7 +167,7 @@ function styles(){
       font-size: 10px;
     }
     .link {
-      padding: 10px;
+      padding: 10px 0 10px 10px;
       width: 25%;
     }
   --></style>`;
