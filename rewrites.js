@@ -37,19 +37,7 @@ function iframeLoaded(e){
     let result = 0;
     const urlToCheck = domain + requestPath;
     
-    const message = `
-      <div class="rewrite">
-        <div class="path">
-          <span>request</span><br>${requestPath}
-        </div>
-        <div class="path">
-          <span>target</span><br>${targetPath}
-        </div>
-        <div class="link">
-          <a href=${urlToCheck} target="_blank">link to check</a> code: <span id="test"></span>
-        </div>
-      </div>
-    `;
+    const message = rewriteReport(requestPath, targetPath);
     postMessage(message);
     fetch(urlToCheck)
     .then(response => {
@@ -63,8 +51,29 @@ function iframeLoaded(e){
   submitRedirect(requestPath, targetPath, form);
 }
 
-function postMessage(text, container = notifications){
-  container.innerHTML += `<p>${text}</p>`;
+function rewriteReport(requestPath, targetPath) {
+  const message = `
+      <div class="rewrite">
+        <div class="path">
+          <span>request</span><br>${requestPath}
+        </div>
+        <div class="path">
+          <span>target</span><br>${targetPath}
+        </div>
+        <div class="link >
+          <a href=${domain + requestPath} target="_blank">link</a> code: <span id="test"></span>
+        </div>
+      </div>`;
+  return message; 
+}
+
+function postMessage(text, wrapper = null, style = null, container = notifications){
+  let message = wrapper ? '<' + wrapper : '';
+  message += style ? ` style="${style}"`: '';
+  message += wrapper ? '>' : '';
+  message += text;
+  message += wrapper ? `</${wrapper}>` : '';
+  container.innerHTML += message;
 }
 
 function submitRedirect(request, target, form){
@@ -76,16 +85,16 @@ function submitRedirect(request, target, form){
     const index = options.indexOf("301");
     if (index != -1) {
       form.redirect_type.selectedIndex = index;
-      postMessage('all good! found all required fields');
-      postMessage(`request: "${form.request_path.value}", target: "${form.target_path.value}", type: ${form.redirect_type.value}`)
+      postMessage('all good! found all required fields', 'p', 'color: cyan');
+      postMessage(`request: "${form.request_path.value}", target: "${form.target_path.value}", type: ${form.redirect_type.value}`, 'p', 'color: cyan');
     }
     else {
-      postMessage('301 redirect option was not found');
+      postMessage('301 redirect option was not found', 'p', 'color: red');
     }
     form.submit();
   }
   else {
-    console.error('this is not a 301 redirect form. missing required inputs');
+    postMessage('this is not a 301 redirect form. missing required inputs', 'p', 'color: red');
   }
 }
 
